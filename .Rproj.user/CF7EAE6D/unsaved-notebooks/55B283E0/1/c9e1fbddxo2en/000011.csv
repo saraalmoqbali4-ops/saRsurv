@@ -1,0 +1,8 @@
+"0","ggplot(iris, aes(x = Sepal.Width)) +"
+"0","  geom_density(alpha = 0.6) +"
+"0","  labs("
+"0","    title = ""Density of Sepal Width "","
+"0","    x = ""Sepal Width (cm)"","
+"0","    y = ""Density"""
+"0","  ) +"
+"0","  theme_minimal()"

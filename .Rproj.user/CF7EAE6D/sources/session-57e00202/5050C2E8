@@ -1,0 +1,26 @@
+{
+    "id": "5050C2E8",
+    "path": "~/saRsurv/man/weighted_logrank.Rd",
+    "project_path": "man/weighted_logrank.Rd",
+    "type": "r_doc",
+    "hash": "465528054",
+    "contents": "",
+    "dirty": false,
+    "created": 1760456942586.0,
+    "source_on_save": false,
+    "relative_order": 49,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1760450402,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1760450402,
+    "read_only": true,
+    "read_only_alternatives": [
+        "R/weighted_logrank.R"
+    ]
+}

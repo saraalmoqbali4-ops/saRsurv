@@ -1,0 +1,28 @@
+{
+    "id": "FE197839",
+    "path": "~/saRsurv/man/survfit_weighted.Rd",
+    "project_path": "man/survfit_weighted.Rd",
+    "type": "r_doc",
+    "hash": "1445888489",
+    "contents": "",
+    "dirty": false,
+    "created": 1760456958795.0,
+    "source_on_save": false,
+    "relative_order": 50,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "0,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1760364135,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1760364135,
+    "read_only": true,
+    "read_only_alternatives": [
+        "R/survfit_weighted.R"
+    ]
+}

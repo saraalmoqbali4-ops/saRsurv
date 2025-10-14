@@ -1,0 +1,8 @@
+"0","s <-ourdata |> group_by(city) |>"
+"0","  summarise("
+"0","    mean_price_daily = mean(price_daily),"
+"0","    median_price_daily = median(price_daily),"
+"0","    lessthan10 = sum(price_daily <= 10),"
+"0","    greaterthan10 = sum(price_daily > 10)"
+"0","  )"
+"0","s |> arrange(mean_price_daily)"

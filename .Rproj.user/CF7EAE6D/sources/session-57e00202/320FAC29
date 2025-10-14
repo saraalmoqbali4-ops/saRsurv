@@ -1,0 +1,26 @@
+{
+    "id": "320FAC29",
+    "path": "~/saRsurv/tests/testthat/test-plot_km_alpha.R",
+    "project_path": "tests/testthat/test-plot_km_alpha.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1760361603836.0,
+    "source_on_save": false,
+    "relative_order": 30,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "27,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1760372294,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1760372294934,
+    "read_only": false,
+    "read_only_alternatives": []
+}

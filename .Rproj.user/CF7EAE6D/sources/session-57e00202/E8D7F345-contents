@@ -1,0 +1,12 @@
+test_that("plot_logrank_grid returns a ggplot heatmap", {
+  skip_on_cran()
+  testthat::skip_if_not_installed("ggplot2")
+  testthat::skip_if_not_installed("survival")
+
+  lung <- survival::lung
+  lung$status01 <- as.integer(lung$status == 2)
+
+  gdf <- logrank_grid(lung, "time", "status01", "sex")
+  p   <- plot_logrank_grid(gdf)
+  expect_s3_class(p, "ggplot")
+})

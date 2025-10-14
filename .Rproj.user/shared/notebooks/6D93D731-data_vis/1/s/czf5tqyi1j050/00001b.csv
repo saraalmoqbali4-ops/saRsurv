@@ -1,0 +1,4 @@
+"0",""
+"0","#5. What happens if you make a scatterplot of class vs drv? Why is it not useful?"
+"0","ggplot(data = mpg, aes(x = class, y = drv)) +"
+"0","  geom_point()"

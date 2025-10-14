@@ -1,0 +1,34 @@
+Package: saRsurv
+Type: Package
+Title: Simplified Survival Analysis Tools for Students and Researchers
+Version: 0.1.0
+Authors@R: 
+    person(given = "Sara",
+           family = "Al-Moqbali",
+           email = "saraalmoqbali4@gmail.com",
+           role = c("aut", "cre"))
+Description: The 'saRsurv' package provides simplified functions for non-parametric
+    and semi-parametric survival analysis (KM, log-rank, Cox PH) with plotting
+    helpers suitable for teaching and applied research.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 4.2)
+Imports:
+    survival,
+    ggplot2,
+    dplyr,
+    tidyr,
+    rlang,
+    stats
+Suggests:
+    testthat (>= 3.0.0),
+    rmarkdown,
+    devtools,
+    usethis,
+    survminer,
+    coxme
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

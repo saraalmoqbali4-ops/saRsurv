@@ -1,0 +1,2 @@
+"0","data <- read_csv(""opensooq_apartments.csv"",show_col_types = FALSE)"
+"0","head(data)"

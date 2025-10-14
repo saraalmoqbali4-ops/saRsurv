@@ -1,0 +1,87 @@
+---
+title: "saRsur"
+output: html_document
+---
+
+```{r}
+library(usethis)
+use_r("survfit_weighted")
+use_r("fit_km_auto")
+use_r("fit_km")
+use_r("compute_strata_alpha")
+use_r("plot_km_alpha")
+use_r("fit_cox_cluster")
+use_r("fit_cox_timedep")
+use_r("compute_rale")
+use_r("plot_rale_by_strata")
+use_r("calibrate_surv")
+use_r("plot_calibration_surv")
+use_r("stratified_weighted_logrank")
+use_r("weighted_logrank")
+use_r("logrank_grid")
+use_r("logrank_grid_stratified")
+use_r("plot_logrank_grid")
+use_test("survfit_weighted")
+use_test("fit_km_auto")
+use_test("fit_km")
+use_test("plot_km_alpha")
+use_test("fit_cox_cluster")
+use_test("fit_cox_timedep")
+use_test("compute_rale")
+use_test("plot_rale_by_strata")
+use_test("calibrate_surv")
+use_test("plot_calibration_surv")
+use_test("stratified_weighted_logrank")
+use_test("weighted_logrank")
+use_test("logrank_grid")
+use_test("logrank_grid_stratified")
+use_test("plot_logrank_grid")
+```
+
+
+
+```{r}
+
+library(devtools)
+devtools::document()
+
+```
+
+
+```{r}
+# Run all tests in the package
+if (!requireNamespace("testthat", quietly = TRUE)) {
+  install.packages("testthat")
+}
+devtools::test()
+
+
+```
+
+
+```{r}
+pkgbuild::check_build_tools(debug = TRUE)
+
+```
+
+```{r}
+usethis::use_mit_license("Sara Al-Moqbali")
+
+```
+
+
+```{r}
+devtools::check()
+
+```
+
+
+```{r}
+devtools::build()
+```
+
+
+
+`
+
+  
