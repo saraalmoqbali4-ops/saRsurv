@@ -1,4 +1,3 @@
-# tests/testthat/test-compute_rale.R
 test_that("compute_rale works for unstratified and stratified fits", {
   skip_on_cran()
   testthat::skip_if_not_installed("survival")
@@ -6,16 +5,21 @@ test_that("compute_rale works for unstratified and stratified fits", {
   lung <- survival::lung
   lung$status01 <- as.integer(lung$status == 2)
 
-  f0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
-  r0 <- compute_rale(f0, t0 = 0)
-  expect_type(r0, "double")
-  expect_equal(length(r0), 1L)
-  expect_true(r0 >= 0)
+  # Unstratified
+  fit0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
+  rale0 <- compute_rale(fit0)
+  expect_true(is.numeric(rale0))
+  expect_length(rale0, 1)
+  expect_true(rale0 > 0)
 
-  fs <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
-  rs <- compute_rale(fs, t0 = 0)
-  expect_type(rs, "double")
-  expect_true(length(rs) >= 2L)
-  expect_true(all(rs >= 0))
-  expect_false(is.null(names(rs)))
+  # Stratified by sex
+  fits <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
+  rales <- compute_rale(fits)
+  expect_true(is.numeric(rales))
+  expect_named(rales)
+  expect_true(all(rales > 0))
+
+  # t0 cutoff
+  rale_cut <- compute_rale(fit0, t0 = 500)
+  expect_true(rale_cut < rale0)
 })

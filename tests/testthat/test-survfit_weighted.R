@@ -1,4 +1,3 @@
-# tests/testthat/test-survfit_weighted.R
 test_that("survfit_weighted runs (unweighted)", {
   skip_on_cran()
   testthat::skip_if_not_installed("survival")
@@ -8,6 +7,7 @@ test_that("survfit_weighted runs (unweighted)", {
 
   fit <- survfit_weighted(lung, time = "time", status = "status01")
   expect_s3_class(fit, "survfit")
+
   sm <- summary(fit)
   expect_true(length(sm$time) >= 1)
 })
@@ -34,4 +34,26 @@ test_that("survfit_weighted supports strata", {
 
   fit_s <- survfit_weighted(lung, "time", "status01", strata = "sex")
   expect_s3_class(fit_s, "survfit")
+})
+
+# --- Recommended additions for completeness ---
+
+test_that("survfit_weighted prints message when no weights are provided", {
+  lung <- survival::lung
+  lung$status01 <- as.integer(lung$status == 2)
+
+  expect_message(
+    survfit_weighted(lung, "time", "status01"),
+    "No weights provided"
+  )
+})
+
+test_that("survfit_weighted throws an error if the weight column does not exist", {
+  lung <- survival::lung
+  lung$status01 <- as.integer(lung$status == 2)
+
+  expect_error(
+    survfit_weighted(lung, "time", "status01", weights = "not_exist"),
+    "not found"
+  )
 })

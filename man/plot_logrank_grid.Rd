@@ -7,29 +7,32 @@
 plot_logrank_grid(grid_df)
 }
 \arguments{
-\item{grid_df}{Output of \code{logrank_grid()} or \code{logrank_grid_stratified()}.}
+\item{grid_df}{A data.frame output from \code{logrank_grid()} or
+\code{logrank_grid_stratified()}, containing at least columns \code{rho},
+\code{gamma}, and \code{p.value}.}
 }
 \value{
-A ggplot object.
+A \code{ggplot} object showing a heatmap of -log10(p).
 }
 \description{
-Heatmap of -log10(p) across FH (rho, gamma)
+Visualizes results of \code{logrank_grid()} or \code{logrank_grid_stratified()}
+as a heatmap of -log10(p-values) over the (rho, gamma) parameter grid.
 }
 \examples{
 \dontrun{
-  if (requireNamespace("survival", quietly = TRUE) &&
-      requireNamespace("ggplot2", quietly = TRUE)) {
-    data(lung, package = "survival")
-    lung$status01 <- as.integer(lung$status == 2)
+if (requireNamespace("survival", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  data(lung, package = "survival")
+  lung$status01 <- as.integer(lung$status == 2)
 
-    # Non-stratified heatmap
-    gdf <- logrank_grid(lung, "time", "status01", "sex")
-    print(plot_logrank_grid(gdf))
+  # Non-stratified example
+  gdf <- logrank_grid(lung, "time", "status01", "sex")
+  print(plot_logrank_grid(gdf))
 
-    # Stratified heatmap
-    df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
-    gdf_s <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog")
-    print(plot_logrank_grid(gdf_s))
-  }
-}
+  # Stratified example
+  df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
+  gdf_s <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog")
+  print(plot_logrank_grid(gdf_s))
+}}
+
 }

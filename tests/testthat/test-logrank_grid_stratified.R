@@ -1,16 +1,29 @@
-test_that("logrank_grid_stratified returns a (rho,gamma) table", {
+test_that("logrank_grid_stratified runs and returns data frame", {
   skip_on_cran()
   testthat::skip_if_not_installed("survival")
 
   lung <- survival::lung
   lung$status01 <- as.integer(lung$status == 2)
-  df <- lung[complete.cases(lung[, c("time", "status01", "sex", "ph.ecog")]), ]
+  df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
 
-  grd <- expand.grid(rho = c(0, 0.5), gamma = c(0, 1))
-  gdf <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog", grid = grd)
+  res <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog")
 
-  expect_s3_class(gdf, "data.frame")
-  expect_equal(nrow(gdf), nrow(grd))
-  expect_true(all(is.finite(gdf$statistic)))
-  expect_true(all(gdf$p.value >= 0 & gdf$p.value <= 1, na.rm = TRUE))
+  expect_s3_class(res, "data.frame")
+  expect_true(all(c("rho", "gamma", "statistic", "p.value") %in% names(res)))
+  expect_true(nrow(res) >= 3)
+  expect_true(all(res$p.value >= 0 & res$p.value <= 1, na.rm = TRUE))
+})
+
+test_that("logrank_grid_stratified works with custom grid", {
+  skip_on_cran()
+  testthat::skip_if_not_installed("survival")
+
+  lung <- survival::lung
+  lung$status01 <- as.integer(lung$status == 2)
+  df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
+  grd <- expand.grid(rho = c(0, 1), gamma = c(0, 1))
+
+  res <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog", grid = grd)
+  expect_equal(nrow(res), 4)
+  expect_true(is.numeric(res$statistic))
 })

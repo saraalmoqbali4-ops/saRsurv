@@ -2,33 +2,55 @@
 % Please edit documentation in R/survfit_weighted.R
 \name{survfit_weighted}
 \alias{survfit_weighted}
-\title{Weighted Kaplan–Meier (with optional strata)}
+\title{Weighted Kaplan-Meier Estimator (with Optional Weights)}
 \usage{
-survfit_weighted(
-  data,
-  time,
-  status,
-  strata = NULL,
-  weights = NULL,
-  conf.type = "log"
-)
+survfit_weighted(data, time, status, strata = NULL, weights = NULL)
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame containing the survival variables.}
 
-\item{time}{Name of time column}
+\item{time}{The column name for the time-to-event variable.}
 
-\item{status}{Name of status column (1 = event, 0 = censor)}
+\item{status}{The column name for the event indicator (1 = event occurred, 0 = censored).}
 
-\item{strata}{Optional name of a grouping column}
+\item{strata}{Optional column name for the stratification variable.}
 
-\item{weights}{Optional vector or column-name of case weights}
-
-\item{conf.type}{CI type passed to \code{survival::survfit()}}
+\item{weights}{Optional column name for subject-level weights (e.g., IPW).}
 }
 \value{
-A \code{survfit} object
+A \code{survfit} object from the \code{survival} package.
 }
 \description{
-Weighted Kaplan–Meier (with optional strata)
+Computes a Kaplan-Meier survival curve that optionally incorporates subject-level weights
+(e.g., inverse probability weights). If no weights are provided, equal weights are assumed.
+}
+\examples{
+\dontrun{
+if (requireNamespace("survival", quietly = TRUE)) {
+  data(lung, package = "survival")
+  lung$status01 <- as.integer(lung$status == 2)
+
+  # Example without weights
+  fit1 <- survfit_weighted(
+    data = lung,
+    time = "time",
+    status = "status01",
+    strata = "sex"
+  )
+  plot(fit1, main = "Weighted KM by Sex")
+
+  # Example with random weights
+  set.seed(123)
+  lung$ipw <- runif(nrow(lung), 0.5, 1.5)
+  fit2 <- survfit_weighted(
+    data = lung,
+    time = "time",
+    status = "status01",
+    strata = "sex",
+    weights = "ipw"
+  )
+  plot(fit2, col = c("blue", "red"), lty = 1:2,
+       main = "Weighted KM with IPW",
+       xlab = "Time", ylab = "Survival Probability")
+}}
 }

@@ -2,25 +2,50 @@
 % Please edit documentation in R/compute_strata_alpha.R
 \name{compute_strata_alpha}
 \alias{compute_strata_alpha}
-\title{Compute alpha values per stratum based on group sizes}
+\title{Compute alpha (transparency) values per stratum based on group sizes}
 \usage{
 compute_strata_alpha(
   x,
-  transform = c("log", "sqrt", "linear"),
+  transform = c("log", "sqrt", "linear", "power", "reverse"),
+  power = 0.5,
   min_alpha = 0.3,
-  max_alpha = 1
+  max_alpha = 1,
+  return_df = FALSE
 )
 }
 \arguments{
-\item{x}{A vector (factor or character) of group labels.}
+\item{x}{A vector (factor, character, or numeric) of group labels.}
 
-\item{transform}{Transformation method. One of \code{"log"}, \code{"sqrt"}, or \code{"linear"}.}
+\item{transform}{Transformation method. One of \code{"log"}, \code{"sqrt"},
+\code{"linear"}, \code{"power"}, or \code{"reverse"}.}
 
-\item{min_alpha, max_alpha}{Lower and upper bounds in \verb{[0, 1]}.}
+\item{power}{Numeric exponent used when \code{transform = "power"}. Default = 0.5.}
+
+\item{min_alpha, max_alpha}{Lower and upper alpha bounds in \verb{[0, 1]}.}
+
+\item{return_df}{Logical; if \code{TRUE}, returns a data frame instead of a named vector.}
 }
 \value{
-A named numeric vector of alpha values, with names corresponding to group levels.
+Either a named numeric vector or a data frame with columns:
+\describe{
+\item{stratum}{Group names}
+\item{alpha}{Alpha (transparency) values}
+}
 }
 \description{
-Compute alpha values per stratum based on group sizes
+Computes alpha (transparency) values for each stratum based on its relative
+group size. Larger groups receive higher alpha (more opaque), while smaller
+ones are rendered more transparent. This helps balance the visibility of
+groups with unequal sample sizes in survival plots or other visualizations.
+}
+\details{
+This function supports multiple transformation methods (\code{"log"}, \code{"sqrt"},
+\code{"linear"}, \code{"power"}, and \code{"reverse"}) and allows reversed scaling or user-defined power.
+Missing values are ignored with a warning.
+}
+\examples{
+groups <- c(rep("A", 20), rep("B", 50), rep("C", 200))
+compute_strata_alpha(groups)
+compute_strata_alpha(groups, transform = "sqrt")
+compute_strata_alpha(groups, transform = "power", power = 0.25)
 }

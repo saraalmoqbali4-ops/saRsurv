@@ -1,21 +1,28 @@
-# tests/testthat/test-compute_rale.R
-test_that("compute_rale works for unstratified and stratified fits", {
+test_that("plot_rale_by_strata works correctly", {
+  skip_on_cran()
+  testthat::skip_if_not_installed("survival")
+  testthat::skip_if_not_installed("ggplot2")
+
+  lung <- survival::lung
+  lung$status01 <- as.integer(lung$status == 2)
+
+  fit_strat <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
+  p <- plot_rale_by_strata(fit_strat, t0 = 0)
+
+  expect_s3_class(p, "ggplot")
+
+  # Check data embedded in the ggplot
+  df <- ggplot2::ggplot_build(p)$data[[1]]
+  expect_true(all(df$y >= 0))
+})
+
+test_that("plot_rale_by_strata errors for unstratified fit", {
   skip_on_cran()
   testthat::skip_if_not_installed("survival")
 
   lung <- survival::lung
   lung$status01 <- as.integer(lung$status == 2)
+  fit0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
 
-  f0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
-  r0 <- compute_rale(f0, t0 = 0)
-  expect_type(r0, "double")
-  expect_equal(length(r0), 1L)
-  expect_true(r0 >= 0)
-
-  fs <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
-  rs <- compute_rale(fs, t0 = 0)
-  expect_type(rs, "double")
-  expect_true(length(rs) >= 2L)
-  expect_true(all(rs >= 0))
-  expect_false(is.null(names(rs)))
+  expect_error(plot_rale_by_strata(fit0), "not stratified")
 })

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_km_auto.R
 \name{fit_km_auto}
 \alias{fit_km_auto}
-\title{Fit KM even if column names differ (auto-detect)}
+\title{Automatically Fit Kaplan-Meier Curves (Auto-Detect Columns)}
 \usage{
 fit_km_auto(
   data,
@@ -15,35 +15,37 @@ fit_km_auto(
 )
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame containing survival variables.}
 
-\item{time, status}{Optional character column names. If NULL, guessed.}
+\item{time, status}{Optional character column names. If NULL, guessed automatically.}
 
-\item{strata, weights}{Optional character column names.}
+\item{strata, weights}{Optional character column names for stratification and weights.}
 
-\item{event_code}{Optional numeric code that indicates an event if
-\code{status} is not 0/1 or 1/2 (e.g., event_code = 2 in \code{lung}).}
+\item{event_code}{Optional numeric value indicating the event (e.g., 2 in \code{lung} dataset).}
 
-\item{conf.type}{Confidence interval type for KM. Default "log-log".}
+\item{conf.type}{Type of confidence interval ("log", "log-log", "plain", etc). Default "log-log".}
 }
 \value{
-survfit object
+A \code{survfit} object (same output as \code{\link[=fit_km]{fit_km()}}).
 }
 \description{
-Tries to guess \code{time} and \code{status} columns by common patterns and
-normalizes the status to 0/1. Useful when your data doesn't use the
-exact names (e.g., "futime", "event", "death"...).
+A smart wrapper around \code{\link[=fit_km]{fit_km()}} that automatically detects the time
+and status columns based on common naming patterns (e.g., "time", "futime",
+"status", "event", "death", etc.). It also normalizes the event variable
+to 0/1 automatically.
+}
+\details{
+This function is useful when working with datasets that use different
+naming conventions. For example, the \code{survival::lung} dataset uses
+"time" and "status" where events are coded as 2. The function can handle
+this via \code{event_code = 2}.
 }
 \examples{
 \dontshow{if (requireNamespace("survival", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 lung <- survival::lung
-fit <- fit_km_auto(
-  data   = lung,
-  time   = "time",
-  status = "status",
-  strata = "sex",
-  event_code = 2
-)
+
+# Automatically detect time/status and normalize
+fit <- fit_km_auto(lung, strata = "sex", event_code = 2)
 summary(fit)
 \dontshow{\}) # examplesIf}
 }

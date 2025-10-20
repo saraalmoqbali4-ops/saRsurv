@@ -2,20 +2,23 @@
 % Please edit documentation in R/plot_rale_by_strata.R
 \name{plot_rale_by_strata}
 \alias{plot_rale_by_strata}
-\title{Plot RALE by strata for a stratified survfit}
+\title{Plot RALE by Strata for a Stratified survfit Object}
 \usage{
-plot_rale_by_strata(survfit_obj, t0 = 0)
+plot_rale_by_strata(survfit_obj, t0 = 0, fill_color = "steelblue")
 }
 \arguments{
 \item{survfit_obj}{A stratified \code{survfit} object.}
 
-\item{t0}{Lower bound for integration (default 0).}
+\item{t0}{Numeric. Lower bound for integration (default = 0).}
+
+\item{fill_color}{Character. Optional fill color palette for bars (default "steelblue").}
 }
 \value{
-A \code{ggplot} object.
+A \code{ggplot} object showing RALE per stratum.
 }
 \description{
-Computes RALE per stratum and displays a bar chart.
+Computes the Risk-Adjusted Life Expectancy (RALE) for each stratum
+in a stratified Kaplan-Meier fit and displays the results as a bar chart.
 }
 \examples{
 \dontshow{if ((requireNamespace("survival", quietly = TRUE) && requireNamespace("ggplot2", quietly = TRUE))) withAutoprint(\{ # examplesIf}
@@ -23,6 +26,6 @@ lung <- survival::lung
 lung$status01 <- as.integer(lung$status == 2)
 fs <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
 p <- plot_rale_by_strata(fs, t0 = 0)
-# print(p)
+print(p)
 \dontshow{\}) # examplesIf}
 }

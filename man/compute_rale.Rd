@@ -2,33 +2,31 @@
 % Please edit documentation in R/compute_rale.R
 \name{compute_rale}
 \alias{compute_rale}
-\title{Risk-Adjusted Life Expectancy (RALE)
-...}
+\title{Risk-Adjusted Life Expectancy (RALE)}
 \usage{
 compute_rale(survfit_obj, t0 = 0)
 }
 \arguments{
-\item{survfit_obj}{a \code{survfit} object.}
+\item{survfit_obj}{A \code{survfit} object.}
 
-\item{t0}{Numeric lower bound for time (default 0).}
+\item{t0}{Numeric lower bound for time (default = 0).}
 }
 \value{
 Numeric scalar (unstratified) or a named numeric vector (per stratum).
 }
 \description{
-Risk-Adjusted Life Expectancy (RALE)
-...
+Computes the area under the survival curve (AUC) from time \code{t0} onward.
+This value represents the risk-adjusted life expectancy - i.e., the expected
+time remaining until an event occurs, weighted by survival probability.
 }
 \examples{
 \dontshow{if (requireNamespace("survival", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 lung <- survival::lung
 lung$status01 <- as.integer(lung$status == 2)
 
-# Unstratified
 f0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
 compute_rale(f0, t0 = 0)
 
-# Stratified by sex (one RALE per stratum)
 fs <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
 compute_rale(fs, t0 = 0)
 \dontshow{\}) # examplesIf}

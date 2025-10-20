@@ -75,9 +75,9 @@ and clustering. Supported engines:
 \details{
 The function accepts both \strong{modern} and \strong{legacy aliases} for parameters:
 \itemize{
-\item \code{status} ⇐ alias: \code{event}
-\item \code{strata} ⇐ alias: \code{strata_var}
-\item \code{cluster} ⇐ alias: \code{cluster_id}
+\item \code{status} ? alias: \code{event}
+\item \code{strata} ? alias: \code{strata_var}
+\item \code{cluster} ? alias: \code{cluster_id}
 }
 }
 \examples{
@@ -93,13 +93,5 @@ m1 <- fit_cox_cluster(
   engine = "coxph_robust"
 )
 summary(m1)
-
-# Using legacy aliases (event / cluster_id / strata_var)
-m2 <- fit_cox_cluster(
-  data = lung, time = "time", event = "status01",
-  covars = c("age","sex"), cluster_id = "id",
-  strata_var = NULL, engine = "coxph_robust"
-)
-summary(m2)
 \dontshow{\}) # examplesIf}
 }

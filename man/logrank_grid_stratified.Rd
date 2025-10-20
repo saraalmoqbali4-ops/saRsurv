@@ -2,7 +2,7 @@
 % Please edit documentation in R/logrank_grid_stratified.R
 \name{logrank_grid_stratified}
 \alias{logrank_grid_stratified}
-\title{Grid over (rho, gamma) for the stratified weighted log-rank}
+\title{Grid search over (rho, gamma) for the stratified weighted log-rank test}
 \usage{
 logrank_grid_stratified(
   data,
@@ -10,40 +10,47 @@ logrank_grid_stratified(
   status,
   group,
   strata,
-  grid = expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1))
+  grid = expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1)),
+  ipw = NULL
 )
 }
 \arguments{
-\item{data}{data.frame with time, status, group, strata.}
+\item{data}{A data frame containing survival data.}
 
-\item{time, status, group, strata}{Character names of columns.}
+\item{time}{Character. Name of the time column.}
 
-\item{grid}{Optional data.frame with rho, gamma; default {0,0.5,1}x{0,0.5,1}.}
+\item{status}{Character. Name of the event indicator column (1=event, 0=censor).}
+
+\item{group}{Character. Name of the treatment or group variable.}
+
+\item{strata}{Character. Name of the stratification variable.}
+
+\item{grid}{Optional data frame specifying combinations of \code{rho} and \code{gamma}.}
+
+\item{ipw}{Optional column name for inverse probability weights.}
 }
 \value{
-data.frame with rho, gamma, statistic, p.value
+A data frame summarizing per-grid test statistics and p-values.
 }
 \description{
-Grid over (rho, gamma) for the stratified weighted log-rank
+Performs multiple stratified Fleming-Harrington weighted log-rank tests
+for a grid of (rho, gamma) parameters and returns their statistics and p-values.
 }
 \examples{
 \dontrun{
-  if (requireNamespace("survival", quietly = TRUE)) {
-    data(lung, package = "survival")
-    lung$status01 <- as.integer(lung$status == 2)
-    # Use ECOG performance as strata; drop NAs
-    df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
+if (requireNamespace("survival", quietly = TRUE)) {
+  data(lung, package = "survival")
+  lung$status01 <- as.integer(lung$status == 2)
+  df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
 
-    # Default grid
-    gdf <- logrank_grid_stratified(df, time = "time", status = "status01",
-                                   group = "sex", strata = "ph.ecog")
-    head(gdf)
+  # Default grid
+  gdf <- logrank_grid_stratified(df, time = "time", status = "status01",
+                                 group = "sex", strata = "ph.ecog")
+  head(gdf)
 
-    # Custom grid
-    grd <- expand.grid(rho = c(0, 1), gamma = c(0, 1))
-    gdf2 <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog", grid = grd)
-    # Best (smallest p-value)
-    gdf2[order(gdf2$p.value), ][1, ]
-  }
-}
+  # Custom grid
+  grd <- expand.grid(rho = c(0, 1), gamma = c(0, 1))
+  gdf2 <- logrank_grid_stratified(df, "time", "status01", "sex", "ph.ecog", grid = grd)
+  gdf2[order(gdf2$p.value), ][1, ]  # smallest p-value
+}}
 }

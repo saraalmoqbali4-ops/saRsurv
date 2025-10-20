@@ -1,24 +1,29 @@
 #' Risk-Adjusted Life Expectancy (RALE)
-#' ...
-#' @param survfit_obj a `survfit` object.
-#' @param t0 Numeric lower bound for time (default 0).
+#'
+#' @description
+#' Computes the area under the survival curve (AUC) from time `t0` onward.
+#' This value represents the risk-adjusted life expectancy - i.e., the expected
+#' time remaining until an event occurs, weighted by survival probability.
+#'
+#' @param survfit_obj A `survfit` object.
+#' @param t0 Numeric lower bound for time (default = 0).
 #' @return Numeric scalar (unstratified) or a named numeric vector (per stratum).
 #'
 #' @examplesIf requireNamespace("survival", quietly = TRUE)
 #' lung <- survival::lung
 #' lung$status01 <- as.integer(lung$status == 2)
 #'
-#' # Unstratified
 #' f0 <- survival::survfit(survival::Surv(time, status01) ~ 1, data = lung)
 #' compute_rale(f0, t0 = 0)
 #'
-#' # Stratified by sex (one RALE per stratum)
 #' fs <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
 #' compute_rale(fs, t0 = 0)
 #'
 #' @export
 compute_rale <- function(survfit_obj, t0 = 0) {
-  s  <- summary(survfit_obj)
+  stopifnot(inherits(survfit_obj, "survfit"))
+
+  s <- summary(survfit_obj)
   tt <- s$time
   ss <- s$surv
   st <- s$strata
@@ -34,19 +39,19 @@ compute_rale <- function(survfit_obj, t0 = 0) {
     area_first + area_rest
   }
 
-  # Unstratified (no strata component)
-  if (is.null(st)) return(.rale_area(tt, ss, t0))
+  if (is.null(st)) {
+    return(.rale_area(tt, ss, t0))
+  }
 
-  # `summary.survfit` may return either a factor label per row OR a named count vector.
+  # Handle multiple strata
   if (length(st) == length(tt)) {
     idx_list <- split(seq_along(tt), st)
-    out <- vapply(idx_list, function(ix) .rale_area(tt[ix], ss[ix], t0), numeric(1))
-    return(out)
   } else {
     labs <- rep(names(st), st)
     idx_list <- split(seq_along(tt), labs)
-    out <- vapply(idx_list, function(ix) .rale_area(tt[ix], ss[ix], t0), numeric(1))
-    return(out)
   }
+
+  out <- vapply(idx_list, function(ix) .rale_area(tt[ix], ss[ix], t0), numeric(1))
+  return(out)
 }
 

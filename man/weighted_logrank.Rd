@@ -2,7 +2,7 @@
 % Please edit documentation in R/weighted_logrank.R
 \name{weighted_logrank}
 \alias{weighted_logrank}
-\title{Weighted Log-Rank test (Fleming–Harrington with optional IPW)}
+\title{Weighted Log-Rank Test (Fleming-Harrington with optional IPW)}
 \usage{
 weighted_logrank(
   data,
@@ -12,36 +12,39 @@ weighted_logrank(
   rho = 0,
   gamma = 0,
   weight = NULL,
-  ipw = NULL
+  ipw = NULL,
+  return_df = FALSE
 )
 }
 \arguments{
-\item{data}{data.frame with columns for time, status, group (and optional weights).}
+\item{data}{A data frame containing the survival data.}
 
-\item{time}{Character, time column name.}
+\item{time}{Character. Name of the time variable.}
 
-\item{status}{Character, status column (0/1, or 1/2 with 2=event).}
+\item{status}{Character. Name of the event indicator (1=event, 0=censor).}
 
-\item{group}{Character, binary group column.}
+\item{group}{Character. Name of the group variable.}
 
-\item{rho, gamma}{Non-negative FH parameters.}
+\item{rho}{Numeric. Fleming–Harrington rho parameter.}
 
-\item{weight}{Optional character: name of numeric non-negative weights column.}
+\item{gamma}{Numeric. Fleming–Harrington gamma parameter.}
 
-\item{ipw}{Optional character: \strong{deprecated alias} for \code{weight}.}
+\item{weight}{Optional column name for subject-level weights.}
+
+\item{ipw}{Optional column name for inverse probability weights (alias of weight).}
+
+\item{return_df}{Logical. If TRUE, returns intermediate computations as a data frame.}
 }
 \value{
-list(statistic, p.value, rho, gamma, method)
+A list containing the test statistic, p-value, and FH parameters used.
+\item{statistic}{Chi-square test statistic}
+\item{p.value}{P-value (1 df)}
+\item{rho,gamma}{FH parameters}
+\item{method}{Test name}
 }
 \description{
-Computes a two-sample weighted log-rank statistic using FH weights
-w(t) = S(t)^rho * (1 - S(t))^gamma, where S(t) is the pooled KM.
-}
-\examples{
-\dontshow{if (requireNamespace("survival", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-lung <- survival::lung
-lung$status01 <- as.integer(lung$status == 2)
-weighted_logrank(lung, "time", "status01", "sex")
-weighted_logrank(lung, "time", "status01", "sex", rho = 0, gamma = 1)
-\dontshow{\}) # examplesIf}
+Performs a two-sample weighted log-rank test using
+Fleming-Harrington weights:
+\deqn{w(t) = S(t)^{\rho} (1 - S(t))^{\gamma}}
+where S(t) is the pooled Kaplan-Meier survival function.
 }

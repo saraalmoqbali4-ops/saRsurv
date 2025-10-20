@@ -2,26 +2,56 @@
 % Please edit documentation in R/fit_km.R
 \name{fit_km}
 \alias{fit_km}
-\title{Fit Kaplan-Meier survival curves}
+\title{Fit Kaplan-Meier Survival Curves (Professional Version)}
 \usage{
 fit_km(data, time, status, strata = NULL, weights = NULL, conf.type = "log")
 }
 \arguments{
-\item{data}{Data frame containing the variables.}
+\item{data}{A data frame containing survival variables.}
 
-\item{time}{Name of the time variable.}
+\item{time}{Character name of the time-to-event variable.}
 
-\item{status}{Name of the event variable (1 = event, 0 = censor).}
+\item{status}{Character name of the event indicator variable (1 = event, 0 = censored).}
 
-\item{strata}{Optional name of a grouping (strata) variable.}
+\item{strata}{Optional character name of a grouping (stratification) variable.}
 
-\item{weights}{Optional case weights.}
+\item{weights}{Optional character name of a column containing case weights.}
 
-\item{conf.type}{Type of confidence interval ("log", "plain", etc).}
+\item{conf.type}{Type of confidence interval ("log", "plain", "log-log", etc). Default is "log".}
 }
 \value{
-A survfit object.
+A \code{survfit} object (or subclass "fit_km") containing:
+\itemize{
+\item Estimated survival probabilities over time
+\item Confidence intervals for \( S(t) \)
+\item (Optionally) separate curves for each stratum
+}
 }
 \description{
-Fit Kaplan-Meier survival curves
+A clean and robust wrapper around \code{survival::survfit()} for fitting
+Kaplan-Meier survival curves. This function automatically builds the formula
+from variable names and supports optional stratification and weighting.
+}
+\details{
+The Kaplan-Meier estimator provides a nonparametric estimate of the
+survival function \( S(t) = P(T > t) \).
+This implementation allows users to easily fit survival curves, compare
+groups (via the \code{strata} argument), and include optional case weights.
+}
+\examples{
+library(survival)
+data(lung)
+lung$status01 <- as.integer(lung$status == 2)
+
+# Example 1: Simple KM curve
+fit1 <- fit_km(lung, time = "time", status = "status01")
+
+# Example 2: Stratified by gender
+fit2 <- fit_km(lung, time = "time", status = "status01", strata = "sex")
+
+# Example 3: With weights
+set.seed(123)
+lung$w <- runif(nrow(lung), 0.5, 1.5)
+fit3 <- fit_km(lung, time = "time", status = "status01", weights = "w")
+
 }

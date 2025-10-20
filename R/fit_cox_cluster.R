@@ -7,9 +7,9 @@
 #' - "coxme": Uses `coxme::coxme` (random effect for cluster)
 #'
 #' The function accepts both **modern** and **legacy aliases** for parameters:
-#' - `status` ⇐ alias: `event`
-#' - `strata` ⇐ alias: `strata_var`
-#' - `cluster` ⇐ alias: `cluster_id`
+#' - `status` ? alias: `event`
+#' - `strata` ? alias: `strata_var`
+#' - `cluster` ? alias: `cluster_id`
 #'
 #' @param data A data.frame containing the survival data.
 #' @param time Character. Name of the time-to-event column.
@@ -37,14 +37,6 @@
 #'   engine = "coxph_robust"
 #' )
 #' summary(m1)
-#'
-#' # Using legacy aliases (event / cluster_id / strata_var)
-#' m2 <- fit_cox_cluster(
-#'   data = lung, time = "time", event = "status01",
-#'   covars = c("age","sex"), cluster_id = "id",
-#'   strata_var = NULL, engine = "coxph_robust"
-#' )
-#' summary(m2)
 #'
 #' @importFrom stats as.formula
 #' @export
@@ -79,9 +71,23 @@ fit_cox_cluster <- function(data, time,
   if (is.null(status) || !(status %in% names(data))) {
     stop("`status` (or alias `event`) must be a valid column in `data`.")
   }
-  if (length(covars)) stopifnot(all(covars %in% names(data)))
-  if (!is.null(strata))  stopifnot(strata  %in% names(data))
-  if (!is.null(cluster)) stopifnot(cluster %in% names(data))
+
+  # ---- Validate covariates ----
+  if (length(covars) && !all(covars %in% names(data))) {
+    missing_covars <- setdiff(covars, names(data))
+    stop(
+      "One or more covariates not found in data: ",
+      paste(missing_covars, collapse = ", ")
+    )
+  }
+
+  if (!is.null(strata) && !(strata %in% names(data))) {
+    stop("Stratification variable not found in data: ", strata)
+  }
+
+  if (!is.null(cluster) && !(cluster %in% names(data))) {
+    stop("Cluster variable not found in data: ", cluster)
+  }
 
   engine <- match.arg(engine)
 
@@ -150,4 +156,3 @@ survfit_strata_cluster <- function(data, time,
                   engine = engine, ties = ties,
                   event_code = event_code)
 }
-

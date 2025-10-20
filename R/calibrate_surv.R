@@ -11,7 +11,7 @@
 #' @param data A data frame containing predictions and observed outcomes.
 #' @param time_col Name of the time column (character).
 #' @param status_col Name of the event status column (`1 = event`, `0 = censor`).
-#' @param time_point Numeric value specifying the time horizon at which to calibrate (for example, `365`).
+#' @param time_point Numeric value specifying the time horizon at which to calibrate (e.g., `365`).
 #' @param ngroups Integer number of risk groups (quantiles). Default is `10`.
 #' @param observed_method Either `"binary"` (fraction with `time > time_point`)
 #'   or `"km"` (Kaplan-Meier estimate at `time_point`). Default is `"km"`.
@@ -28,7 +28,7 @@
 #' @examples
 #' \dontrun{
 #' library(survival)
-#' data("lung", package = "survival")
+#' lung <- survival::lung
 #' lung$status01 <- as.integer(lung$status == 2)
 #' cfit <- survival::coxph(survival::Surv(time, status01) ~ age + sex, data = lung)
 #' cal <- calibrate_surv(
@@ -73,7 +73,14 @@ calibrate_surv <- function(fit, data, time_col, status_col,
   # ---- Risk bins by predicted survival ----
   brks <- stats::quantile(pred, probs = seq(0, 1, length.out = ngroups + 1),
                           na.rm = TRUE, type = 7)
-  groups <- cut(pred, breaks = unique(brks), include.lowest = TRUE, dig.lab = 6)
+  brks_unique <- unique(brks)
+
+  if (length(brks_unique) < 2) {
+    # fallback: all predictions identical
+    groups <- factor(rep("All", length(pred)))
+  } else {
+    groups <- cut(pred, breaks = brks_unique, include.lowest = TRUE, dig.lab = 6)
+  }
 
   # ---- Observed survival per bin ----
   obs_val <- function(df) {
@@ -90,7 +97,7 @@ calibrate_surv <- function(fit, data, time_col, status_col,
     }
   }
 
-  # aggregate
+  # ---- Aggregate by group ----
   split_idx <- split(seq_len(nrow(data)), groups)
   out <- lapply(names(split_idx), function(g) {
     idx <- split_idx[[g]]

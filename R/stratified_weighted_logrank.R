@@ -1,56 +1,23 @@
-# ===== R/stratified_weighted_logrank.R =====
-#' Stratified Weighted Log-Rank test (FH + optional IPW)
+#' Stratified Weighted Log-Rank Test (Fleming-Harrington + optional IPW)
 #'
-#' Mantel–Haenszel aggregation of weighted log-rank scores across strata.
+#' Aggregates per-stratum weighted log-rank scores (U, V)
+#' using Mantel-Haenszel pooling.
 #'
-#' @param data   data.frame with time, status, group, strata.
-#' @param time,status,group,strata Character names of columns.
-#' @param rho,gamma FH exponents; default 0,0.
-#' @param ipw   Optional subject-level weights (column name).
-#' @return list(statistic, p.value, method, rho, gamma, n, n_strata)
+#' @param data A data frame containing time, status, group, and strata variables.
+#' @param time Character. Name of the time variable.
+#' @param status Character. Name of the event indicator (1=event, 0=censor).
+#' @param group Character. Name of the treatment or group variable.
+#' @param strata Character. Name of the stratification variable.
+#' @param rho Numeric. Fleming–Harrington rho parameter.
+#' @param gamma Numeric. Fleming–Harrington gamma parameter.
+#' @param ipw Optional column name for inverse probability weights.
+#' @param return_df Logical. If TRUE, returns per-stratum statistics as a data frame.
 #'
-#' @examplesIf requireNamespace("survival", quietly = TRUE)
-#' # Example with the 'lung' dataset from survival
-#' lung <- survival::lung
-#' # Convert to 1=event (death), 0=censor
-#' lung$status01 <- as.integer(lung$status == 2)
-#'
-#' # Use ECOG performance as a stratification factor (drop rows with NA)
-#' df <- lung[complete.cases(lung[, c("time","status01","sex","ph.ecog")]), ]
-#'
-#' # 1) Standard stratified log-rank (rho=0, gamma=0)
-#' res_std <- stratified_weighted_logrank(
-#'   data = df, time = "time", status = "status01",
-#'   group = "sex", strata = "ph.ecog", rho = 0, gamma = 0
-#' )
-#' res_std$p.value
-#'
-#' # 2) Late-emphasis weights (rho=0, gamma=1)
-#' res_late <- stratified_weighted_logrank(
-#'   data = df, time = "time", status = "status01",
-#'   group = "sex", strata = "ph.ecog", rho = 0, gamma = 1
-#' )
-#' res_late$p.value
-#'
-#' # 3) With subject-level IPW (demo random weights)
-#' set.seed(123)
-#' df$ipw <- stats::runif(nrow(df), 0.5, 1.5)
-#' res_ipw <- stratified_weighted_logrank(
-#'   data = df, time = "time", status = "status01",
-#'   group = "sex", strata = "ph.ecog", rho = 0, gamma = 0, ipw = "ipw"
-#' )
-#' res_ipw$p.value
-#'
-#' # 4) (Optional) Compare to survival::survdiff when rho=0
-#' sd_fit <- survival::survdiff(
-#'   survival::Surv(time, status01) ~ sex + strata(ph.ecog),
-#'   data = df, rho = 0
-#' )
-#' p_ref <- stats::pchisq(as.numeric(sd_fit$chisq), df = 1, lower.tail = FALSE)
-#' p_ref
+#' @return A list with components: statistic, p.value, method, rho, gamma, n, n_strata.
 #' @export
 stratified_weighted_logrank <- function(data, time, status, group, strata,
-                                        rho = 0, gamma = 0, ipw = NULL){
+                                        rho = 0, gamma = 0, ipw = NULL,
+                                        return_df = FALSE) {
   stopifnot(is.data.frame(data))
   need <- c(time, status, group, strata)
   stopifnot(all(need %in% names(data)))
@@ -59,22 +26,25 @@ stratified_weighted_logrank <- function(data, time, status, group, strata,
   g   <- as.factor(d0[[group]])
   s   <- as.factor(d0[[strata]])
   stopifnot(nlevels(g) == 2)
+
   if (!is.null(ipw)) {
     stopifnot(ipw %in% names(d0))
-    if (any(!is.finite(d0[[ipw]]) | d0[[ipw]] < 0)) stop("`ipw` must be finite and >= 0.")
+    if (any(!is.finite(d0[[ipw]]) | d0[[ipw]] < 0))
+      stop("`ipw` must be finite and >= 0.")
   }
 
-  .uv_one <- function(d){
+  .uv_one <- function(d) {
     g <- as.factor(d[[group]]); lvl <- levels(g)
     w_subj <- if (is.null(ipw)) rep(1, nrow(d)) else d[[ipw]]
+
     km <- survival::survfit(survival::Surv(d[[time]], d[[status]]) ~ 1)
     Sstep <- stats::stepfun(km$time, c(1, km$surv))
     t_ev <- sort(unique(d[[time]][d[[status]] == 1]))
 
     U <- 0; V <- 0
     for (ti in t_ev) {
-      at_risk  <- d[[time]] >= ti
-      events   <- d[[time]] == ti & d[[status]] == 1
+      at_risk <- d[[time]] >= ti
+      events  <- d[[time]] == ti & d[[status]] == 1
 
       n0 <- sum(w_subj[at_risk & g == lvl[1]])
       n1 <- sum(w_subj[at_risk & g == lvl[2]])
@@ -107,7 +77,15 @@ stratified_weighted_logrank <- function(data, time, status, group, strata,
   stat <- if (Vtot > 0) as.numeric((Utot^2) / Vtot) else NA_real_
   pval <- if (is.na(stat)) NA_real_ else stats::pchisq(stat, df = 1, lower.tail = FALSE)
 
-  list(statistic = stat, p.value = pval,
-       method = "Stratified weighted log-rank (FH + optional IPW)",
-       rho = rho, gamma = gamma, n = nrow(d0), n_strata = nlevels(s))
+  out <- list(
+    statistic = stat,
+    p.value   = pval,
+    rho = rho, gamma = gamma,
+    n = nrow(d0),
+    n_strata = nlevels(s),
+    method = "Stratified weighted log-rank (FH + optional IPW)"
+  )
+
+  if (return_df) out <- as.data.frame(out, stringsAsFactors = FALSE)
+  out
 }

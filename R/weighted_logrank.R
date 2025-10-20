@@ -1,40 +1,46 @@
-#' Weighted Log-Rank test (Fleming–Harrington with optional IPW)
+#' Weighted Log-Rank Test (Fleming-Harrington with optional IPW)
 #'
-#' Computes a two-sample weighted log-rank statistic using FH weights
-#' w(t) = S(t)^rho * (1 - S(t))^gamma, where S(t) is the pooled KM.
+#' @description
+#' Performs a two-sample weighted log-rank test using
+#' Fleming-Harrington weights:
+#' \deqn{w(t) = S(t)^{\rho} (1 - S(t))^{\gamma}}
+#' where S(t) is the pooled Kaplan-Meier survival function.
 #'
-#' @param data data.frame with columns for time, status, group (and optional weights).
-#' @param time Character, time column name.
-#' @param status Character, status column (0/1, or 1/2 with 2=event).
-#' @param group Character, binary group column.
-#' @param rho,gamma Non-negative FH parameters.
-#' @param weight Optional character: name of numeric non-negative weights column.
-#' @param ipw Optional character: **deprecated alias** for `weight`.
-#' @return list(statistic, p.value, rho, gamma, method)
-#' @examplesIf requireNamespace("survival", quietly = TRUE)
-#' lung <- survival::lung
-#' lung$status01 <- as.integer(lung$status == 2)
-#' weighted_logrank(lung, "time", "status01", "sex")
-#' weighted_logrank(lung, "time", "status01", "sex", rho = 0, gamma = 1)
+#' @param data A data frame containing the survival data.
+#' @param time Character. Name of the time variable.
+#' @param status Character. Name of the event indicator (1=event, 0=censor).
+#' @param group Character. Name of the group variable.
+#' @param rho Numeric. Fleming–Harrington rho parameter.
+#' @param gamma Numeric. Fleming–Harrington gamma parameter.
+#' @param weight Optional column name for subject-level weights.
+#' @param ipw Optional column name for inverse probability weights (alias of weight).
+#' @param return_df Logical. If TRUE, returns intermediate computations as a data frame.
+#'
+#' @return A list containing the test statistic, p-value, and FH parameters used.
+#' \item{statistic}{Chi-square test statistic}
+#' \item{p.value}{P-value (1 df)}
+#' \item{rho,gamma}{FH parameters}
+#' \item{method}{Test name}
 #' @export
 weighted_logrank <- function(data, time, status, group,
                              rho = 0, gamma = 0,
-                             weight = NULL, ipw = NULL) {
+                             weight = NULL, ipw = NULL,
+                             return_df = FALSE) {
 
   stopifnot(is.data.frame(data))
   stopifnot(all(c(time, status, group) %in% names(data)))
   stopifnot(is.numeric(rho) && rho >= 0, is.numeric(gamma) && gamma >= 0)
 
-  # back-compat: ipw alias for weight
+  # Alias support
   if (!is.null(ipw) && is.null(weight)) {
     weight <- ipw
   } else if (!is.null(ipw) && !is.null(weight) && !identical(ipw, weight)) {
     warning("Both `weight` and deprecated `ipw` were provided; using `weight`.")
   }
 
+  # Basic subset
   x <- data[, c(time, status, group), drop = FALSE]
   names(x) <- c("time", "status", "group")
-
   if (length(unique(x$group)) != 2L)
     stop("`group` must have exactly two levels.")
 
@@ -48,7 +54,7 @@ weighted_logrank <- function(data, time, status, group,
       stop("`weight`/`ipw` must be non-negative numeric without NAs.")
   }
 
-  # coerce status to 0/1
+  # status cleanup
   st <- x$status
   if (!all(st %in% c(0, 1))) {
     if (all(st %in% c(1, 2))) {
@@ -58,16 +64,9 @@ weighted_logrank <- function(data, time, status, group,
     }
   }
 
-  df <- data.frame(time = x$time,
-                   status = st,
-                   group = factor(x$group),
-                   wt = w)
+  df <- data.frame(time = x$time, status = st, group = factor(x$group), wt = w)
+  df <- df[order(df$time), ]
 
-  # order by time ascending
-  o  <- order(df$time)
-  df <- df[o, ]
-
-  # unique event times
   ev_times <- sort(unique(df$time[df$status == 1]))
   if (!length(ev_times)) stop("No events present.")
 
@@ -92,7 +91,7 @@ weighted_logrank <- function(data, time, status, group,
   }
   Y <- Y1 + Y2; D <- D1 + D2
 
-  # pooled S(t-) step process
+  # Pooled survival (Kaplan-Meier)
   S <- numeric(nT); S_prev <- 1
   for (i in seq_len(nT)) {
     S[i] <- S_prev
@@ -100,7 +99,7 @@ weighted_logrank <- function(data, time, status, group,
   }
   wFH <- (S^rho) * ((1 - S)^gamma)
 
-  # expectation & variance (approximate, Greenwood-style)
+  # Expected & variance
   E1 <- Y1 * (D / pmax(Y, 1e-12))
   V  <- (Y1 * Y2 * D * (Y - D)) / (pmax(Y^2 * (Y - 1), 1e-12))
 
@@ -110,7 +109,11 @@ weighted_logrank <- function(data, time, status, group,
 
   stat <- as.numeric((Znum^2) / Zden)
   pv   <- stats::pchisq(stat, df = 1, lower.tail = FALSE)
+  out <- list(statistic = stat, p.value = pv, rho = rho, gamma = gamma,
+              method = "Fleming-Harrington weighted log-rank (two-sample)")
 
-  list(statistic = stat, p.value = pv, rho = rho, gamma = gamma,
-       method = "Fleming-Harrington weighted log-rank (two-sample)")
+  if (return_df)
+    return(as.data.frame(out, stringsAsFactors = FALSE))
+  out
 }
+

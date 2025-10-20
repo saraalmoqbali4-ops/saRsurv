@@ -2,48 +2,44 @@
 % Please edit documentation in R/logrank_grid.R
 \name{logrank_grid}
 \alias{logrank_grid}
-\title{Grid search over FH (rho, gamma) for the weighted log-rank test}
+\title{Grid Search for (rho, gamma) in Weighted Log-Rank Test}
 \usage{
 logrank_grid(
   data,
   time,
   status,
   group,
-  grid = expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1))
+  grid = expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1)),
+  weight = NULL,
+  ipw = NULL,
+  sort = TRUE,
+  quiet = TRUE
 )
 }
 \arguments{
-\item{data}{data.frame with columns for time, status, group (and optional weights).}
+\item{data}{A data frame containing the survival data.}
 
-\item{time}{Character, time column name.}
+\item{time}{Character. Name of the time-to-event column.}
 
-\item{status}{Character, status column (0/1, or 1/2 with 2=event).}
+\item{status}{Character. Name of the event indicator column (1=event, 0=censor).}
 
-\item{group}{Character, binary group column.}
+\item{group}{Character. Name of the grouping variable column.}
 
-\item{grid}{Optional \code{data.frame} with columns \code{rho} and \code{gamma}. If \code{NULL},
-the default grid is \code{expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1))}.}
+\item{grid}{Optional data frame specifying combinations of \code{rho} and \code{gamma}.
+Default is \code{expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1))}.}
+
+\item{weight}{Optional column name for subject-level weights.}
+
+\item{ipw}{Optional column name for inverse probability weights (alias of weight).}
+
+\item{sort}{Logical. If TRUE, results are sorted by p-value ascending.}
+
+\item{quiet}{Logical. If TRUE, suppresses printed messages during computation.}
 }
 \value{
-A \code{data.frame} with columns: \code{rho}, \code{gamma}, \code{statistic}, \code{p.value}.
+A data frame with columns: \code{rho}, \code{gamma}, \code{statistic}, and \code{p.value}.
 }
 \description{
-Grid search over FH (rho, gamma) for the weighted log-rank test
-}
-\examples{
-\dontrun{
-if (requireNamespace("survival", quietly = TRUE)) {
-  data(lung, package = "survival")
-  lung$status01 <- as.integer(lung$status == 2)
-
-  ## Default grid: expand.grid(rho = c(0, 0.5, 1), gamma = c(0, 0.5, 1))
-  gdf <- logrank_grid(lung, time = "time", status = "status01", group = "sex")
-  head(gdf)
-
-  ## Custom grid
-  grd <- expand.grid(rho = c(0, 1), gamma = c(0, 1))
-  gdf2 <- logrank_grid(lung, "time", "status01", "sex", grid = grd)
-  gdf2[order(gdf2$p.value), ][1L, ]
-}}
-
+Runs the Fleming-Harrington weighted log-rank test over a grid of
+(rho, gamma) parameter combinations and returns test statistics and p-values.
 }

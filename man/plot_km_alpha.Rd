@@ -2,15 +2,17 @@
 % Please edit documentation in R/plot_km_alpha.R
 \name{plot_km_alpha}
 \alias{plot_km_alpha}
-\title{Stratified KM plot with risk-based transparency}
+\title{Stratified Kaplan-Meier Plot with Risk-Based Transparency}
 \usage{
 plot_km_alpha(
   fit,
   data,
   group_var,
-  transform = c("log", "sqrt", "linear"),
+  transform = c("log", "sqrt", "linear", "power", "reverse"),
+  power = 0.5,
   min_alpha = 0.3,
   max_alpha = 1,
+  return_plot = FALSE,
   ...
 )
 }
@@ -21,50 +23,40 @@ plot_km_alpha(
 
 \item{group_var}{Character. Column name in \code{data} indicating strata or groups.}
 
-\item{transform}{Transformation method. One of \code{"log"}, \code{"sqrt"}, or \code{"linear"}.}
+\item{transform}{Transformation method for alpha scaling.
+One of \code{"log"}, \code{"sqrt"}, \code{"linear"}, \code{"power"}, or \code{"reverse"}.}
+
+\item{power}{Numeric exponent used when \code{transform = "power"}. Default = 0.5.}
 
 \item{min_alpha}{Lower bound for alpha, in \verb{[0, 1]}.}
 
 \item{max_alpha}{Upper bound for alpha, in \verb{[0, 1]}.}
 
-\item{...}{Additional arguments passed to \code{survminer::ggsurvplot()}.}
+\item{return_plot}{Logical; if TRUE, returns only the ggplot object.}
+
+\item{...}{Additional arguments passed to \code{\link[survminer:ggsurvplot]{survminer::ggsurvplot()}}.}
 }
 \value{
-A \code{ggsurvplot} object with alpha mapped per stratum.
+A \code{ggsurvplot} object (or \code{ggplot} if \code{return_plot = TRUE}),
+with per-stratum alpha mapped according to group sizes.
 }
 \description{
-Applies per-stratum transparency (alpha) proportional to group size.
+Produces a Kaplan-Meier plot where each stratum (group) is displayed
+with transparency proportional to its sample size.
+Larger groups appear more opaque, smaller ones more transparent.
 }
 \examples{
 \dontrun{
-# Example using the 'lung' dataset
 if (requireNamespace("survival", quietly = TRUE) &&
-    requireNamespace("survminer", quietly = TRUE) &&
-    requireNamespace("ggplot2", quietly = TRUE)) {
+    requireNamespace("survminer", quietly = TRUE)) {
 
   data("lung", package = "survival")
-
-  # Convert status to 1 = event (death), 0 = censor
   lung$status01 <- as.integer(lung$status == 2)
+  fit <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
 
-  # Fit stratified KM by sex (1/2)
-  fit_sex <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
-
-  # Default (log transform): alpha scaled to group sizes
-  gp1 <- plot_km_alpha(fit = fit_sex, data = lung, group_var = "sex")
-  print(gp1$plot)
-
-  # Try other transforms and bounds
-  gp2 <- plot_km_alpha(
-    fit = fit_sex,
-    data = lung,
-    group_var = "sex",
-    transform = "sqrt",
-    min_alpha = 0.2,
-    max_alpha = 0.9
-  )
-  print(gp2$plot)
+  # Log scaling (default)
+  gp <- plot_km_alpha(fit, lung, "sex")
+  print(gp$plot)
 }
 }
-
 }

@@ -24,7 +24,7 @@ calibrate_surv(
 
 \item{status_col}{Name of the event status column (\code{1 = event}, \code{0 = censor}).}
 
-\item{time_point}{Numeric value specifying the time horizon at which to calibrate (for example, \code{365}).}
+\item{time_point}{Numeric value specifying the time horizon at which to calibrate (e.g., \code{365}).}
 
 \item{ngroups}{Integer number of risk groups (quantiles). Default is \code{10}.}
 
@@ -56,7 +56,7 @@ custom prediction function via \code{predict_fun}.
 \examples{
 \dontrun{
 library(survival)
-data("lung", package = "survival")
+lung <- survival::lung
 lung$status01 <- as.integer(lung$status == 2)
 cfit <- survival::coxph(survival::Surv(time, status01) ~ age + sex, data = lung)
 cal <- calibrate_surv(
