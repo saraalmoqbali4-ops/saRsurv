@@ -1,6 +1,0 @@
-"0","devtools::check()"
-"1","[1m[33mError[39m in `package_file()`:[22m
-[38;5;232m[33m![38;5;232m Could not find package root.
-[36mℹ[38;5;232m Is ]8;;file://C:/Users/pc/Desktop/.[34m.[38;5;232m]8;; inside a package?[39m
-[90mRun `]8;;x-r-run:rlang::last_trace()rlang::last_trace()]8;;` to see where the error occurred.[39m
-"

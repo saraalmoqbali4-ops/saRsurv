@@ -1,8 +1,0 @@
-"0","ggplot(mtcars, aes(qsec)) +"
-"0","  geom_density(alpha = 0.6) +"
-"0","  labs("
-"0","    title = ""Density of qsec"","
-"0","    x = ""qsec"","
-"0","    y = ""Density"""
-"0","  ) +"
-"0","  theme_minimal()"

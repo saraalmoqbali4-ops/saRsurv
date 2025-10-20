@@ -1,2 +1,0 @@
-"0","ourdata<- data |> select(""city"", ""num_of_rooms"", ""rental_type"", ""rental_price"")"
-"0","head(ourdata)"
