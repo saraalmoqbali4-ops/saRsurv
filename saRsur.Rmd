@@ -24,6 +24,7 @@ use_r("logrank_grid")
 use_r("logrank_grid_stratified")
 use_r("plot_logrank_grid")
 use_r("plot_cox_forest")
+use_r("fit_cox_weighted")
 use_test("survfit_weighted")
 use_test("fit_km_auto")
 use_test("fit_km")
@@ -43,6 +44,7 @@ use_test("logrank_grid")
 use_test("logrank_grid_stratified")
 use_test("plot_logrank_grid")
 use_test("plot_cox_forest")
+use_test("fit_cox_weighted")
 ```
 
 
