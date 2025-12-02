@@ -3,9 +3,9 @@
 **Simplified Survival Analysis Tools for Students and Researchers**
 
 The `saRsurv` package provides simplified functions for **non-parametric** and **semi-parametric survival analysis**, including:
-- Kaplan–Meier (KM) estimation  
+- Weighted Kaplan–Meier (KM) estimation  
 - Weighted and Stratified Log-Rank tests  
-- Cox Proportional Hazards (Cox PH) model  
+- Weighted Cox Proportional Hazards (Cox PH) model  
 - Risk-Adjusted Life Expectancy (RALE) calculation  
 
 It is designed to help **students** and **applied researchers** perform survival analysis easily, with clear visualization support suitable for teaching and real-world applications.
