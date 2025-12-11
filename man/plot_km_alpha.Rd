@@ -2,12 +2,13 @@
 % Please edit documentation in R/plot_km_alpha.R
 \name{plot_km_alpha}
 \alias{plot_km_alpha}
-\title{Stratified Kaplan-Meier Plot with Risk-Based Transparency}
+\title{Stratified Kaplan-Meier Plot with Risk-Based Transparency (Weighted or Unweighted)}
 \usage{
 plot_km_alpha(
-  fit,
+  fit = NULL,
   data,
   group_var,
+  weights = NULL,
   transform = c("log", "sqrt", "linear", "power", "reverse"),
   power = 0.5,
   min_alpha = 0.3,
@@ -17,46 +18,28 @@ plot_km_alpha(
 )
 }
 \arguments{
-\item{fit}{A \code{survfit} object (with or without strata).}
+\item{fit}{A survfit object or NULL (ignored when weights are supplied).}
 
-\item{data}{A data frame used to fit \code{fit}.}
+\item{data}{Data frame.}
 
-\item{group_var}{Character. Column name in \code{data} indicating strata or groups.}
+\item{group_var}{Character, column name in data.}
 
-\item{transform}{Transformation method for alpha scaling.
-One of \code{"log"}, \code{"sqrt"}, \code{"linear"}, \code{"power"}, or \code{"reverse"}.}
+\item{weights}{Optional numeric vector of case weights.}
 
-\item{power}{Numeric exponent used when \code{transform = "power"}. Default = 0.5.}
+\item{transform}{Method for alpha scaling.}
 
-\item{min_alpha}{Lower bound for alpha, in \verb{[0, 1]}.}
+\item{power}{Exponent for "power" transform.}
 
-\item{max_alpha}{Upper bound for alpha, in \verb{[0, 1]}.}
+\item{min_alpha}{Minimum transparency.}
 
-\item{return_plot}{Logical; if TRUE, returns only the ggplot object.}
+\item{max_alpha}{Maximum transparency.}
 
-\item{...}{Additional arguments passed to \code{\link[survminer:ggsurvplot]{survminer::ggsurvplot()}}.}
-}
-\value{
-A \code{ggsurvplot} object (or \code{ggplot} if \code{return_plot = TRUE}),
-with per-stratum alpha mapped according to group sizes.
+\item{return_plot}{Return ggplot only.}
+
+\item{...}{}
 }
 \description{
-Produces a Kaplan-Meier plot where each stratum (group) is displayed
-with transparency proportional to its sample size.
-Larger groups appear more opaque, smaller ones more transparent.
-}
-\examples{
-\dontrun{
-if (requireNamespace("survival", quietly = TRUE) &&
-    requireNamespace("survminer", quietly = TRUE)) {
-
-  data("lung", package = "survival")
-  lung$status01 <- as.integer(lung$status == 2)
-  fit <- survival::survfit(survival::Surv(time, status01) ~ sex, data = lung)
-
-  # Log scaling (default)
-  gp <- plot_km_alpha(fit, lung, "sex")
-  print(gp$plot)
-}
-}
+Produces a Kaplan-Meier plot where each group is displayed with alpha
+proportional to its sample size. If weights are provided, the function
+automatically computes \emph{weighted} KM curves and plots them.
 }

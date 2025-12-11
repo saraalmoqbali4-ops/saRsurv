@@ -105,6 +105,9 @@ devtools::install_github("saraalmoqbali4-ops/saRsurv", build_vignettes = FALSE)
 
 ```
 
+```{r}
+install_github("saraalmoqbali4-ops/saRsurv")
+```
 
 
 `
