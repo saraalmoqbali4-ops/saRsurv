@@ -28,14 +28,16 @@ plot_km_alpha <- function(fit = NULL,
                           return_plot = FALSE,
                           ...) {
 
-  library(ggplot2)
-  library(dplyr)
+  stopifnot(is.data.frame(data))
+  stopifnot(group_var %in% names(data))
 
-  # -----------------------
-  # 1) Compute alpha values
-  # -----------------------
+  library(ggplot2)
+
   transform <- match.arg(transform)
 
+  # -------------------------
+  # Compute alpha per group
+  # -------------------------
   al_map <- compute_strata_alpha(
     data[[group_var]],
     transform = transform,
@@ -44,96 +46,101 @@ plot_km_alpha <- function(fit = NULL,
     max_alpha = max_alpha
   )
 
-  message("? Computed alpha per group: ",
+  message("Computed alpha per group: ",
           paste0(names(al_map), "=", sprintf("%.2f", al_map), collapse = ", "))
 
-  # --------------------------------------------------------
-  # CASE 1: Weighted KM — manual computation (CUSTOM LOGIC)
-  # --------------------------------------------------------
+  # ============================================================
+  # CASE 1 : WEIGHTED KM  (custom manual calculation)
+  # ============================================================
   if (!is.null(weights)) {
 
-    message("? Drawing weighted KM curve (custom saRsurv method).")
+    message("Drawing weighted KM curve using manual method.")
 
-    df <- data %>%
-      mutate(
-        group = .data[[group_var]],
-        time  = .data[[attr(fit, "call")$time]],
-        status = .data[[attr(fit, "call")$status]],
-        w = weights
-      )
+    df <- data
+    df$group <- df[[group_var]]
+    df$time  <- df[[fit$call$time]]
+    df$status <- df[[fit$call$status]]
+    df$w <- weights
 
     groups <- unique(df$group)
-    collector <- list()
+    out <- list()
 
-    # Manual KM weighted for each group
     for (g in groups) {
-      sub <- df %>% filter(group == g)
+      sub <- df[df$group == g, ]
 
-      # Unique event times
       event_times <- sort(unique(sub$time[sub$status == 1]))
       S <- 1
-      surv_list <- numeric(length(event_times))
+      surv_vals <- numeric(length(event_times))
 
       for (i in seq_along(event_times)) {
         t <- event_times[i]
-        d_t <- sum(sub$w[sub$time == t & sub$status == 1])   # weighted deaths
-        Y_t <- sum(sub$w[sub$time >= t])                     # weighted risk set
+        d_t <- sum(sub$w[sub$time == t & sub$status == 1])
+        Y_t <- sum(sub$w[sub$time >= t])
         S <- S * (1 - d_t / Y_t)
-        surv_list[i] <- S
+        surv_vals[i] <- S
       }
 
-      collector[[g]] <- data.frame(
+      out[[g]] <- data.frame(
         time = event_times,
-        surv = surv_list,
+        surv = surv_vals,
         group = g,
         alpha_v = al_map[g]
       )
     }
 
-    res <- bind_rows(collector)
+    df_final <- do.call(rbind, out)
 
-    p <- ggplot(res, aes(x = time, y = surv, color = factor(group),
-                         alpha = alpha_v)) +
+    p <- ggplot(df_final, aes(x = time, y = surv, color = factor(group), alpha = alpha_v)) +
       geom_step(linewidth = 1.0) +
       scale_alpha_identity() +
+      theme_minimal() +
       labs(
-        title = "Weighted Kaplan–Meier Curves with Alpha Transparency",
+        title = "Weighted Kaplan–Meier with Alpha Transparency",
         x = "Time",
         y = "Survival Probability",
         color = group_var
-      ) +
-      theme_minimal(base_size = 14)
+      )
 
     if (return_plot) return(p)
     return(p)
   }
 
-  # --------------------------------------------------------
-  # CASE 2: Normal (unweighted) KM — use ggsurvplot()
-  # --------------------------------------------------------
-  message("? Drawing unweighted KM using survminer.")
+  # ============================================================
+  # CASE 2 : UNWEIGHTED KM (using survminer::ggsurvplot)
+  # ============================================================
 
-  if (is.null(fit)) stop("fit must be supplied when weights = NULL.")
+  stopifnot(!is.null(fit))
 
   if (!requireNamespace("survminer", quietly = TRUE))
     stop("Package 'survminer' required.")
 
-  p <- survminer::ggsurvplot(fit, data = data, ...)
+  message("Drawing unweighted KM using survminer.")
 
-  d <- p$plot$data
-  strata_chr <- as.character(d$strata)
-  cleaned <- sub("^.*?=", "", strata_chr)
+  gp <- survminer::ggsurvplot(fit, data = data, ...)
 
-  key <- ifelse(cleaned %in% names(al_map), cleaned, strata_chr)
+  d <- gp$plot$data
 
-  d$alpha_v <- al_map[key]
-  d$alpha_v[is.na(d$alpha_v)] <- max_alpha
+  # If no strata, assign single alpha
+  if (!("strata" %in% names(d))) {
+    d$alpha_v <- max_alpha
+  } else {
+    # Extract group name from "sex=1" etc
+    strata_chr <- as.character(d$strata)
+    cleaned <- sub("^.*?=", "", strata_chr)
 
-  p$plot$data <- d
-  p$plot <- p$plot +
+    key <- cleaned
+    key[!(key %in% names(al_map))] <- cleaned[!(cleaned %in% names(al_map))]
+
+    # assign alphas
+    d$alpha_v <- al_map[key]
+    d$alpha_v[is.na(d$alpha_v)] <- max_alpha
+  }
+
+  gp$plot$data <- d
+  gp$plot <- gp$plot +
     aes(alpha = .data$alpha_v) +
     scale_alpha_identity(guide = "none")
 
-  if (return_plot) return(p$plot)
-  p
+  if (return_plot) return(gp$plot)
+  gp
 }
